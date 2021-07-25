@@ -1,0 +1,53 @@
+
+
+.container {
+  margin: auto;
+  width: 60%;
+  padding: 10px;
+  text-align: center;
+
+}
+
+.row {  
+  margin: auto;
+  width: 70%;
+  padding: 30px;
+  background: #e8f1f9; 
+  text-align: center;
+}
+
+
+h1 {
+  font-family: 'Share', cursive;
+  font-size: 48px;  
+}
+
+
+h3 {
+    font-family: 'Space Mono', monospace;
+    font-weight: bold;
+
+}
+
+.lead {
+    font-family: 'Barlow', sans-serif;
+}
+
+
+.tip {
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+}
+
+input[type=submit] {
+  background-color: #4169E1;
+  color: white;
+  padding: 14px 20px;
+  width: 200px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
+  font-weight: bold;
+}
