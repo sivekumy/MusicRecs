@@ -10,14 +10,10 @@ from spotipy.oauth2 import SpotifyClientCredentials
 application = Flask(__name__)
 Bootstrap(application)
 application.config['SECRET_KEY'] = 'uZY3nyUwMr'
+tracklist = []
 
 auth_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(auth_manager=auth_manager)
-
-
-class MultiCheckboxField(SelectMultipleField):
-    widget = widgets.ListWidget(prefix_label=False)
-    option_widget = widgets.CheckboxInput()
 
 #Home page start button, allows user to begin quiz
 class BeginQuiz(FlaskForm):
@@ -39,14 +35,33 @@ class Question2(FlaskForm):
     back2 = SubmitField('Back')
     next2 = SubmitField('Next')
     
+    
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+    
 #Question 3
 class Question3(FlaskForm):
+    
     example = MultiCheckboxField('', choices=[], coerce=int, render_kw={'style': 'height: fit-content; list-style: none;'})
-
-    # example = MultiCheckboxField('', choices = [("1", "Class 1"), ("2","Class 2")], render_kw={'style': 'height: fit-content; list-style: none;'})
     back3 = SubmitField('Back')
     next3 = SubmitField('Next')
     
+    def validate(self):                                                         
+
+        rv = FlaskForm.validate(self)                                           
+
+        if not rv:                                                              
+            return False                                                        
+
+        print(self.example.data)                                                
+
+        if len(self.example.data) > 5:                                          
+            self.example.errors.append('Please select no more than 2 items')    
+            return False                                                        
+
+        return True
+
 #Question 4
 # class Question4(FlaskForm):
 #     example = MultiCheckboxField('', coerce=int, choices = [("1", "Class 1"), ("2","Class 2")], render_kw={'style': 'height: fit-content; list-style: none;'})
@@ -68,7 +83,9 @@ def quiz():
     question1 = Question1()
     question2 = Question2()
     question3 = Question3()
-    
+    question3.example.choices = tracklist
+
+
     if request.method == 'POST' and question1.validate_on_submit():
         print(question1.genre1.data)
         print(question1.genre2.data)
@@ -79,13 +96,13 @@ def quiz():
     elif request.method == 'POST' and question2.validate_on_submit():
         print(question2.artist1.data)
         print(question2.artist2.data)
+        tracklist.clear()
         results1 = sp.search(q=question2.artist1.data, limit=4)
         results2 = sp.search(q=question2.artist2.data, limit=4)
         tracks1 = results1['tracks']['items']
         tracks2 = results2['tracks']['items']
         
-        index = 0
-        tracklist = []
+        index = 1
         for track in tracks1:
             tracklist.append((index, track['name'] + " - " + track['artists'][0]['name']))
             index += 1
@@ -95,10 +112,9 @@ def quiz():
             index += 1
 
         question3.example.choices = tracklist
-
         return render_template('question3.html',form=question3)
-
-    elif request.method == 'POST' and question3.validate_on_submit():
+    
+    if request.method == 'POST' and question3.validate_on_submit():
         print("hello!")
         print(question3.example.data)
         return render_template('question4.html')
