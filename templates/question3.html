@@ -47,7 +47,8 @@ MusicRecs
 
       <p class="lead">Select up to 5 tracks</p>
       <p class="tip">Click a box to select your favorite track(s)</p>
-        {{ form.csrf_token }}
+    
+    {{ form.hidden_tag() }}
 
       {{ wtf.quick_form(form) }}
       

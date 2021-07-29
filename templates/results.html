@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap" rel="stylesheet">
 {% endblock %}
 
+
 {% block title %}
 MusicRecs
 {% endblock %}
@@ -26,15 +27,15 @@ MusicRecs
 
   <div class="row">
 
-      <p class="lead">How energetic do you feel?</p>
+      <p class="lead">Do you want to dance?</p>
       <p class="tip">Click and hold circle. Drag it left or right to adjust value.</p>
 
       
-        <form method="POST" action = "">
-            <input type="range" name = "energy" value="24" min="1" max="100" oninput="this.nextElementSibling.value = this.value">
+        <form method="POST" action="">
+            <input type="range" name = "dance" value="24" min="1" max="100" oninput="this.nextElementSibling.value = this.value">
             <output>24</output>
-            <input type="submit" value="Back" />
-            <input type="submit" value="Next" />
+
+            <input type="submit" value="submit" />
         </form>
       
 
