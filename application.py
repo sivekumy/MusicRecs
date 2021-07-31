@@ -159,14 +159,32 @@ def results():
     tracks = ["https://open.spotify.com/track/4VqPOruhp5EdPBeR92t6lQ"]
     results = sp.recommendations(seed_artists=artists, seed_genres=genres, seed_tracks=tracks, limit=5, country=None)
     tracks = results['tracks']
-    
-    if request.method == 'POST':
-        search_artist = request.form['album_cover']
-        print(search_artist)
-        return render_template('results.html', tracks = tracks)
 
-    
+    if request.method == 'POST':
+        
+        if request.form['submit_button'] == 'Restart':
+            return redirect(url_for('home'))
+
+        elif request.form['submit_button'] == 'Save':
+            return redirect(url_for('home'))
+
+        elif request.form['submit_button'] == 'search_artist':
+            search_artist = request.form['search_artist'] #artist name will be searched in Wikipedia scraper
+            print(search_artist)
+            return redirect(url_for('aboutartist', search_artist=search_artist))
+            #send artist name + data from Wikipedia scraper (to be implemented)
+            # return render_template('aboutartist.html', artist=search_artist)
+
     return render_template('results.html', tracks = tracks)
+
+@application.route("/quiz/results/aboutartist", methods=['POST', 'GET'])
+def aboutartist():
+    
+    if request.method == 'POST' and request.form['submit_button'] == 'Back':
+        return redirect(url_for('results'))
+    
+    search_artist = request.args['search_artist']
+    return render_template('aboutartist.html', artist=search_artist)
 
 
 if __name__ == "__main__":

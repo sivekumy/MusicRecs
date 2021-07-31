@@ -52,3 +52,13 @@ input[type=submit] {
   font-family: 'Barlow', sans-serif;
   font-weight: bold;
 }
+
+.btn {
+  border: none;
+  color: #4CAF50;
+  padding: 32px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}

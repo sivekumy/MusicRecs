@@ -4,9 +4,8 @@
 {% block styles %}
 {{ super() }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css" rel="stylesheet" />
-
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/homepage.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +24,7 @@ MusicRecs
     <div class="container">
         <h1 class="app_name">MusicRecs</h1>      
         <p class="slogan">Recommendations for you</p>
-        <p class="tip">Click the album art to learn more about the artist!</p>
+        <p class="tip">Click the heart next to a recommendation to learn more about the artist!</p>
 
     {% for track in tracks %}
 
@@ -44,16 +43,17 @@ MusicRecs
             </p>    
           </div>
             <div class="col">
-            <form>
-                <button class="btn"><i class="fas fa-heart"></i></button>
+            <form method= "POST" action="">
+                <input type="hidden" name="search_artist" value="{{track['artists'][0]['name']}}">
+                <button class="btn" name="submit_button" value ="search_artist"><i width=500 class="bi bi-heart-fill"></i></button>
             </form>
         </div>
       </div>
         {% endfor %}  
         
         <form method = "POST" action "">
-            <input type="submit" value="Save" />
-            <input type="submit" value="Restart" />
+            <input type="submit" value="Save" name="submit_button"/>
+            <input type="submit" value="Restart" name="submit_button" />
         </form>
 
     </div>
