@@ -6,17 +6,6 @@ from wtforms.validators import DataRequired
 import sys
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-
-# Use the application default credentials
-cred = credentials.ApplicationDefault()
-firebase_admin.initialize_app(cred, {
-  'projectId': musicrecs-3a9c8
-})
-
-db = firestore.client()
 
 application = Flask(__name__)
 Bootstrap(application)
@@ -165,8 +154,19 @@ def question5():
 
 @application.route("/quiz/results", methods=['POST', 'GET'])
 def results():
-    results = sp.recommendations(seed_artists=None, seed_genres=None, seed_tracks=None, limit=20, country=None, **kwargs)
-    return render_template('results.html', results = results)
+    artists = ["https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI"]
+    genres = ["k-pop"]
+    tracks = ["https://open.spotify.com/track/4VqPOruhp5EdPBeR92t6lQ"]
+    results = sp.recommendations(seed_artists=artists, seed_genres=genres, seed_tracks=tracks, limit=5, country=None)
+    tracks = results['tracks']
+    
+    if request.method == 'POST':
+        search_artist = request.form['album_cover']
+        print(search_artist)
+        return render_template('results.html', tracks = tracks)
+
+    
+    return render_template('results.html', tracks = tracks)
 
 
 if __name__ == "__main__":

@@ -3,45 +3,94 @@
 
 {% block styles %}
 {{ super() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/homepage.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Abel&family=Space+Mono&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap" rel="stylesheet">
-{% endblock %}
 
+
+{% endblock %}
 
 {% block title %}
 MusicRecs
 {% endblock %}
 
 {% block content %}
+    <div class="container">
+        <h1 class="app_name">MusicRecs</h1>      
+        <p class="slogan">Recommendations for you</p>
+        <p class="tip">Click the album art to learn more about the artist!</p>
 
-<div class="container">
+    {% for track in tracks %}
+
+      <div class="row">
+        <div class="col">
+              <img class="album_cover" width="170" src={{track['album']['images'][1]['url']}}>
+        </div>
+        <div class="col">
+            <p class="track_name">{{track['name']}}</p>
+            <p class="artist_name">{{track['artists'][0]['name']}}</p>
+            <audio controls>
+                <source src="{{track['preview_url']}}" type="">
+            </audio>
+            <p class="audio_link four columns"><a href="{{track['external_urls']['spotify']}}">
+                <img src="https://logodownload.org/wp-content/uploads/2020/03/listen-on-spotify.png" width="100"></a>
+            </p>    
+          </div>
+            <div class="col">
+            <form>
+                <button class="btn"><i class="fas fa-heart"></i></button>
+            </form>
+        </div>
+      </div>
+        {% endfor %}  
+        
+        <form method = "POST" action "">
+            <input type="submit" value="Save" />
+            <input type="submit" value="Restart" />
+        </form>
+
+    </div>
+
+<!-- <div class="container">
       <h1 class="app_name">MusicRecs</h1>      
-    
-<div class="progress">
-  <div class="progress-bar" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">80%</div>
-</div>
 
   <div class="row">
 
-      <p class="lead">Do you want to dance?</p>
-      <p class="tip">Click and hold circle. Drag it left or right to adjust value.</p>
+      <p class="lead">Results</p>
+ 
+    {% for track in tracks %}
+     
+    <div class="container">
+      <div class="row">
+        <div class="col">
+              <img class="album_cover" src={{track['album']['images'][1]['url']}}>
+        </div>
+        <div class="col">
+                  <p class="track_name">{{track['name']}}</p>
+                  <p class="artist_name">{{track['artists'][0]['name']}}</p>
+                  <audio controls>
+                      <source src="{{track['preview_url']}}" type="">
+                  </audio>
 
-      
-        <form method="POST" action="">
-            <input type="range" name = "dance" value="24" min="1" max="100" oninput="this.nextElementSibling.value = this.value">
-            <output>24</output>
+                  <p class="audio_link four columns"><a href="{{track['external_urls']['spotify']}}">
+                      <img src="https://logodownload.org/wp-content/uploads/2020/03/listen-on-spotify.png"></a>
+                  </p>    
+          </div>
+        </div>
+    </div>
 
-            <input type="submit" value="submit" />
-        </form>
-      
 
+    {% endfor %}  
       <p class="pt-5"><strong>{{ message }}</strong></p>
 
   </div>
-</div>
-
+</div> -->
+ 
 {% endblock %}
