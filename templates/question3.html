@@ -17,11 +17,11 @@
 
     <!-- Source: https://stackoverflow.com/questions/19001844/how-to-limit-the-number-of-selected-checkboxes -->
     <script>
-          var limit = 5;
+          var limit = 2;
           $('input.single-checkbox').on('change', function(evt) {
            if($(this).siblings(':checked').length >= limit) {
                this.checked = false;
-               alert('Please only select up to 5 tracks');
+               alert('Please only select two tracks');
            }
         });
     </script>
@@ -45,7 +45,7 @@ MusicRecs
 
   <div class="row">
 
-      <p class="lead">Select up to 5 tracks</p>
+      <p class="lead">Select your favourite two tracks</p>
       <p class="tip">Click a box to select your favorite track(s)</p>
     
     {{ form.hidden_tag() }}

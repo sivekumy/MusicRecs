@@ -32,11 +32,12 @@ MusicRecs
 
       
         <form method="POST" action="">
-            <input type="range" name = "dance" value="24" min="1" max="100" oninput="this.nextElementSibling.value = this.value">
-            <output>24</output>
+            <input type="range" name = "dance" value="{{value}}" min="1" max="100" oninput="this.nextElementSibling.value = this.value">
+            <output>{{value}}</output>
 
-            <input type="submit" value="submit" />
-        </form>
+            <input type="submit" value="Back" name="submit_button" />
+            <input type="submit" value="Submit" name="submit_button" />
+      </form>
       
 
       <p class="pt-5"><strong>{{ message }}</strong></p>
