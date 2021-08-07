@@ -29,6 +29,7 @@ MusicRecs
 
       <p class="lead">Who are two of your favourite artists?</p>
       <p class="tip">Click on each box to type the name of your favourite artist</p>
+      {{ form.hidden_tag() }}
 
       {{ wtf.quick_form(form) }}
 

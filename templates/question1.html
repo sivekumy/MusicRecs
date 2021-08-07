@@ -29,9 +29,10 @@ MusicRecs
 
       <p class="lead">Select your favourite genre</p>
       <p class="tip">Click on the box to view and select from the options</p>
-
       {{ wtf.quick_form(form) }}
+        {{ form.csrf_token }}
 
+      
       <p class="pt-5"><strong>{{ message }}</strong></p>
 
   </div>
