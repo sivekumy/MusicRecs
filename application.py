@@ -20,6 +20,7 @@ fave_tracks = [] #contains urls
 fave_genres = []
 fave_artists = []
 artist_names = []
+tracks = ""
 danceability_score = 24
 energy_score = 24
 
@@ -40,8 +41,8 @@ class Question1(FlaskForm):
     
 #Question 2
 class Question2(FlaskForm):
-    artist1 = StringField('Artist 1', validators=[DataRequired()])
-    artist2 = StringField('Artist 2', validators=[DataRequired()])
+    artist1 = StringField('Artist 1', validators = [validators.required()])
+    artist2 = StringField('Artist 2', validators = [validators.required()])
     back2 = SubmitField('Back')
     next2 = SubmitField('Next')
 
@@ -55,7 +56,7 @@ class Question3(FlaskForm):
     example = MultiCheckboxField('', choices=[], coerce=int, render_kw={'style': 'height: fit-content; list-style: none;'})
     back3 = SubmitField('Back')
     next3 = SubmitField('Next')
-
+    
     def validate(self):                                                         
 
         rv = FlaskForm.validate(self)                                           
@@ -63,13 +64,15 @@ class Question3(FlaskForm):
         if not rv:                                                              
             return False                                                        
 
-        print(self.example.data)                                                
+        print(self.example.data)
+        print(len(self.example.data))
 
-        if len(self.example.data) > 2:                                          
-            self.example.errors.append('Please select no more than 2 items')    
+        if len(self.example.data) > 2 or len(self.example.data) < 2:  
+            print("in here!")
+            self.example.errors.append('Please select 2 items')    
             return False                                                        
 
-        return True
+        return True 
 
 
 #Home Page
@@ -106,50 +109,52 @@ def question1():
 def question2():
     question2 = Question2()
 
-    if request.method == 'POST' and question2.validate_on_submit():
-        global fave_artists, urls_tracklist, artist_names
-        tracklist.clear()
-
-        if question2.next2.data:
-            artist_names.clear()
-            
-            artist_names.append(question2.artist1.data)
-            artist_names.append(question2.artist2.data)
-            
-            results1 = sp.search(q=question2.artist1.data, limit=4)
-            results2 = sp.search(q=question2.artist2.data, limit=4)
-            
-            fave_artists.append(results1['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
-            fave_artists.append(results2['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
-
-            tracks1 = results1['tracks']['items']
-            tracks2 = results2['tracks']['items']
-
-            index = 1
-            for track in tracks1:
-                urls_tracklist.append(track['uri'])
-                tracklist.append((index, track['name'] + " - " + track['artists'][0]['name']))
-                index += 1
-
-            for track in tracks2:
-                urls_tracklist.append(track['uri'])
-                tracklist.append((index, track['name'] + " - " + track['artists'][0]['name']))
-                index += 1
-
-            return redirect(url_for('question3',tracklist=tracklist))
-
-        if question2.back2.data:
-            
-            artist_names.clear()
-            artist_names.append(question2.artist1.data)
-            artist_names.append(question2.artist2.data)
-            
-            if (artist_names):
-                question2.artist1.data = artist_names[0]
-                question2.artist2.data = artist_names[1]
-            
-            return redirect(url_for('question1',tracklist=tracklist))
+    if request.method == 'POST':
         
+        if question2.validate_on_submit():
+            global fave_artists, urls_tracklist, artist_names, tracklist
+            tracklist.clear()
+            urls_tracklist.clear()
+            artist_names.clear()
+            fave_artists.clear()
+
+            if question2.next2.data:
+
+                artist_names.append(question2.artist1.data)
+                artist_names.append(question2.artist2.data)
+
+                results1 = sp.search(q=question2.artist1.data, limit=4)
+                results2 = sp.search(q=question2.artist2.data, limit=4)
+
+                fave_artists.append(results1['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
+                fave_artists.append(results2['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
+
+                tracks1 = results1['tracks']['items']
+                tracks2 = results2['tracks']['items']
+
+                index = 1
+                for track in tracks1:
+                    urls_tracklist.append(track['uri'])
+                    tracklist.append((index, track['name'] + " - " + track['artists'][0]['name']))
+                    index += 1
+
+                for track in tracks2:
+                    urls_tracklist.append(track['uri'])
+                    tracklist.append((index, track['name'] + " - " + track['artists'][0]['name']))
+                    index += 1
+
+                return redirect(url_for('question3',tracklist=tracklist))
+
+            if question2.back2.data:
+                artist_names.append(question2.artist1.data)
+                artist_names.append(question2.artist2.data)
+
+                if (artist_names):
+                    question2.artist1.data = artist_names[0]
+                    question2.artist2.data = artist_names[1]
+
+                return redirect(url_for('question1',tracklist=tracklist))
+
     if request.method == 'GET':
         if (artist_names):
             question2.artist1.data = artist_names[0]
@@ -162,9 +167,11 @@ def question3():
     question3 = Question3()
     question3.example.choices = tracklist
 
-    if request.method == 'POST':
-        if question3.validate_on_submit():
+    if request.method == 'POST' and question3.validate_on_submit():
+
             if question3.next3.data:
+                indices_tracks.clear()
+                fave_tracks.clear()
                 for x in question3.example.data:
                     indices_tracks.append(x-1)
                     fave_tracks.append(urls_tracklist[x-1])
@@ -173,9 +180,14 @@ def question3():
 
             if question3.back3.data:
                 return redirect(url_for('question2'))
-    
+
     if request.method == 'GET':
-        
+
+        if(indices_tracks):
+            print("hello sir")
+            print(indices_tracks)
+            question3.example.data = [indices_tracks[0] + 1, indices_tracks[1] + 1]
+
         return render_template('question3.html',form=question3)
 
 
@@ -214,13 +226,15 @@ def question5():
 
 @application.route("/quiz/results", methods=['POST', 'GET'])
 def results():
-    global fave_artists, fave_genres, fave_tracks, danceability_score, energy_score
-    results = sp.recommendations(seed_artists=fave_artists, seed_genres=fave_genres, seed_tracks=fave_tracks, limit=5, country=None, target_danceability= int(danceability_score)/100, target_energy = int(energy_score)/100)
-    tracks = results['tracks']
+    global fave_artists, fave_genres, fave_tracks, danceability_score, energy_score, tracks
+    print(fave_artists, fave_genres, fave_tracks, danceability_score, energy_score)
+
+    if not tracks:
+        results = sp.recommendations(seed_artists=fave_artists, seed_genres=fave_genres, seed_tracks=fave_tracks, limit=5, country=None, target_danceability= int(danceability_score)/100, target_energy = int(energy_score)/100)
+        tracks = results['tracks']
 
     if request.method == 'POST':
-        tracklist = []
-
+        
         if request.form['submit_button'] == 'Restart':
             fave_tracks.clear()
             artist_names.clear()
@@ -229,6 +243,7 @@ def results():
             tracklist.clear()
             fave_artists.clear()
             fave_genres.clear()
+            tracks = ""
             danceability_score = 24
             energy_source = 24
             return redirect(url_for('home'))
@@ -258,7 +273,11 @@ def aboutartist():
         print(artist_link)
         contents = urllib.request.urlopen(artist_link).read()
         contents_dict = json.loads(contents)
-        artist_info = contents_dict['message'][0] + contents_dict['message'][1] 
+        
+        artist_info = ""
+        for content in contents_dict['message']:
+            artist_info += content
+        
         print(artist_info)
     except Exception:
         artist_info = "No information available :("
