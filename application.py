@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, send_from_directory, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, validators, BooleanField, SelectMultipleField, widgets
@@ -8,7 +8,12 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import urllib.request
 import json
-
+import PIL.Image
+from PIL import ImageFont
+from PIL import ImageDraw
+from urllib.request import urlopen
+from io import BytesIO
+import requests
 application = Flask(__name__)
 Bootstrap(application)
 application.config['SECRET_KEY'] = 'uZY3nyUwMr'
@@ -180,13 +185,12 @@ def question3():
 
             if question3.back3.data:
                 return redirect(url_for('question2'))
-
-    if request.method == 'GET':
-
-        if(indices_tracks):
-            print("hello sir")
-            print(indices_tracks)
-            question3.example.data = [indices_tracks[0] + 1, indices_tracks[1] + 1]
+            
+    else:
+        if (indices_tracks):
+                print("hello sir")
+                print(indices_tracks)
+                question3.example.data = [indices_tracks[0] + 1, indices_tracks[1] + 1]
 
         return render_template('question3.html',form=question3)
 
@@ -224,6 +228,25 @@ def question5():
 
     return render_template('question5.html', value = danceability_score)
 
+@application.route('/download', methods = ['POST', 'GET'])
+def download(tracks):
+    offset = margin = 90
+
+    img = PIL.Image.open('templates/saved_recs.png')
+    d1 = ImageDraw.Draw(img)
+    content = "Recommendations from MusicRecs" + "\n\n"
+
+    font = ImageFont.truetype("fonts/SpaceMono-Regular.ttf", 10)
+
+    for track in tracks:
+        content += track['name'] + "-" + track['artists'][0]['name'] + '\n'
+    
+    d1.text((offset, margin), content, fill=(55, 60, 63), font = font)
+
+    img.show()
+    img.save("image_text.png")
+    # return render_template('download.html')
+
 @application.route("/quiz/results", methods=['POST', 'GET'])
 def results():
     global fave_artists, fave_genres, fave_tracks, danceability_score, energy_score, tracks
@@ -234,6 +257,7 @@ def results():
         tracks = results['tracks']
 
     if request.method == 'POST':
+        print("back here...")
         
         if request.form['submit_button'] == 'Restart':
             fave_tracks.clear()
@@ -245,11 +269,14 @@ def results():
             fave_genres.clear()
             tracks = ""
             danceability_score = 24
-            energy_source = 24
+            energy_score = 24
             return redirect(url_for('home'))
 
         elif request.form['submit_button'] == 'Save':
-            return redirect(url_for('home'))
+            print("Saving....")
+            flash('Image saved!')
+            download(tracks)
+            return redirect(url_for('results'))
 
         elif request.form['submit_button'] == 'search_artist':
             search_artist = request.form['search_artist'] #artist name will be searched in Wikipedia scraper
