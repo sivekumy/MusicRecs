@@ -14,9 +14,10 @@ from PIL import ImageDraw
 from urllib.request import urlopen
 from io import BytesIO
 import requests
-application = Flask(__name__)
-Bootstrap(application)
-application.config['SECRET_KEY'] = 'uZY3nyUwMr'
+
+app = Flask(__name__)
+Bootstrap(app)
+app.config['SECRET_KEY'] = 'uZY3nyUwMr'
 
 tracklist = []
 urls_tracklist = []
@@ -81,7 +82,7 @@ class Question3(FlaskForm):
 
 
 #Home Page
-@application.route("/", methods=['POST', 'GET'])
+@app.route("/", methods=['POST', 'GET'])
 def home():
     form = BeginQuiz()
     if form.validate_on_submit():
@@ -91,7 +92,7 @@ def home():
 
 
 #Quiz
-@application.route("/quiz/1", methods=['POST', 'GET'])
+@app.route("/quiz/1", methods=['POST', 'GET'])
 def question1():
     question1 = Question1()
     global fave_genres
@@ -110,7 +111,7 @@ def question1():
 
         return redirect(url_for('question2'))
 
-@application.route("/quiz/2", methods=['POST', 'GET'])
+@app.route("/quiz/2", methods=['POST', 'GET'])
 def question2():
     question2 = Question2()
 
@@ -167,7 +168,7 @@ def question2():
 
         return render_template('question2.html',form=question2)
 
-@application.route("/quiz/3", methods=['POST', 'GET'])
+@app.route("/quiz/3", methods=['POST', 'GET'])
 def question3():
     question3 = Question3()
     question3.example.choices = tracklist
@@ -195,7 +196,7 @@ def question3():
         return render_template('question3.html',form=question3)
 
 
-@application.route("/quiz/4", methods=['POST', 'GET'])
+@app.route("/quiz/4", methods=['POST', 'GET'])
 def question4():
     global energy_score
     
@@ -211,7 +212,7 @@ def question4():
 
     return render_template('question4.html', value = energy_score)
 
-@application.route("/quiz/5", methods=['POST', 'GET'])
+@app.route("/quiz/5", methods=['POST', 'GET'])
 def question5():
     global danceability_score
     
@@ -228,7 +229,7 @@ def question5():
 
     return render_template('question5.html', value = danceability_score)
 
-@application.route('/download', methods = ['POST', 'GET'])
+@app.route('/download', methods = ['POST', 'GET'])
 def download(tracks):
     offset = margin = 90
 
@@ -247,7 +248,7 @@ def download(tracks):
     img.save("image_text.png")
     # return render_template('download.html')
 
-@application.route("/quiz/results", methods=['POST', 'GET'])
+@app.route("/quiz/results", methods=['POST', 'GET'])
 def results():
     global fave_artists, fave_genres, fave_tracks, danceability_score, energy_score, tracks
     print(fave_artists, fave_genres, fave_tracks, danceability_score, energy_score)
@@ -287,7 +288,7 @@ def results():
 
     return render_template('results.html', tracks = tracks)
 
-@application.route("/quiz/results/aboutartist", methods=['POST', 'GET'])
+@app.route("/quiz/results/aboutartist", methods=['POST', 'GET'])
 def aboutartist():
 
     if request.method == 'POST' and request.form['submit_button'] == 'Back':
@@ -314,7 +315,7 @@ def aboutartist():
     return render_template('aboutartist.html', artist=search_artist, about_artist = artist_info)
 
 #route to test image scraper
-@application.route("/test", methods=['POST', 'GET'])
+@app.route("/test", methods=['POST', 'GET'])
 def test():
     search_term = "music"
     images = "https://scraping-image-app.herokuapp.com/" + search_term
@@ -324,4 +325,4 @@ def test():
     return render_template('test.html', image = image)
 
 if __name__ == "__main__":
-    application.run(host='0.0.0.0', port=int(sys.argv[1]))
+    app.run(host='0.0.0.0', port=int(sys.argv[1]))
