@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, send_from_directory, flash
+from flask import Flask, render_template, redirect, url_for, request, send_from_directory, flash, session
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, validators, BooleanField, SelectMultipleField, widgets
@@ -17,22 +17,26 @@ import requests
 import os
 from boto.s3.connection import S3Connection
 
+
 s3 = S3Connection(os.environ['SPOTIPY_CLIENT_ID'], os.environ['SPOTIPY_CLIENT_SECRET'])
 
 app = Flask(__name__)
 Bootstrap(app)
-app.config['SECRET_KEY'] = 'uZY3nyUwMr'
+# app.config['SECRET_KEY'] = 'uZY3nyUwMr'
+app.secret_key = 'uZY3nyUwMr'
 
-tracklist = []
-urls_tracklist = []
-indices_tracks = []
-fave_tracks = [] #contains urls
-fave_genres = []
-fave_artists = []
-artist_names = []
-tracks = ""
-danceability_score = 24
-energy_score = 24
+# app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
+
+# tracklist = []
+# urls_tracklist = []
+# indices_tracks = []
+# fave_tracks = [] #contains urls
+# fave_genres = []
+# fave_artists = []
+# artist_names = []
+# tracks = ""
+# danceability_score = 24
+# energy_score = 24
 
 auth_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(auth_manager=auth_manager)
@@ -43,7 +47,7 @@ class BeginQuiz(FlaskForm):
 
 class Question1(FlaskForm):
     genres = sp.recommendation_genre_seeds()
-    global fave_genres
+    # global fave_genres
     genre1 = SelectField(u'Genre', choices = genres['genres'], validators = [validators.required()])
     next1 = SubmitField('Next')
 
@@ -77,11 +81,21 @@ class Question3(FlaskForm):
         return True
 
 
-#Home Page
 @app.route("/", methods=['POST', 'GET'])
 def home():
     form = BeginQuiz()
     if form.validate_on_submit():
+        session["tracklist"] = []
+        session["urls_tracklist"] = []
+        session["indices_tracks"] = []
+        session["fave_tracks"] = []
+        session["fave_genres"] = []
+        session["fave_artists"] = []
+        session["artist_names"] = []
+        session["tracks"] = ""
+        session["danceability_score"] = 24
+        session["energy_score"] = 24
+
         return redirect(url_for('question1'))
 
     return render_template('home.html',form=form)
@@ -90,135 +104,152 @@ def home():
 @app.route("/quiz/1", methods=['POST', 'GET'])
 def question1():
     question1 = Question1()
-    global fave_genres
+    # global fave_genres
     
     if request.method == 'GET':
         
-        #Set default values
-        if (fave_genres):
-            question1.genre1.data = fave_genres[0]
+        # Set default values
+        if (session.get('fave_genres')):
+            question1.genre1.data = session['fave_genres'][0]
 
         return render_template('question1.html', form=question1)
 
     if request.method == 'POST' and question1.validate_on_submit():
-        fave_genres.clear()
-        fave_genres.insert(0, question1.genre1.data)
+        print("in here!!!")
+        session['fave_genres'].clear()
+        session['fave_genres'].insert(0, question1.genre1.data)
+        session.modified = True
 
         return redirect(url_for('question2'))
+    
+    return render_template('question1.html', form=question1)
+
 
 @app.route("/quiz/2", methods=['POST', 'GET'])
 def question2():
     question2 = Question2()
+    print("fave genres", session["fave_genres"])
+    print("fave genres2", session.get('fave_genres', None))
 
     if request.method == 'POST':
 
         if question2.validate_on_submit():
-            global fave_artists, urls_tracklist, artist_names, tracklist
-            tracklist.clear()
-            urls_tracklist.clear()
-            artist_names.clear()
-            fave_artists.clear()
+            # global fave_artists, urls_tracklist, artist_names, tracklist
+            session["tracklist"].clear()
+            session["urls_tracklist"].clear()
+            session["artist_names"].clear()
+            session["fave_artists"].clear()
+            
+            session["artist_names"].append(question2.artist1.data)
+            session["artist_names"].append(question2.artist2.data)
+            session.modified = True
 
-            artist_names.append(question2.artist1.data)
-            artist_names.append(question2.artist2.data)
 
             if question2.next2.data:
 
                 results1 = sp.search(q=question2.artist1.data, limit=4)
                 results2 = sp.search(q=question2.artist2.data, limit=4)
 
-                fave_artists.append(results1['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
-                fave_artists.append(results2['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
+                session["fave_artists"].append(results1['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
+                session["fave_artists"].append(results2['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
 
                 tracks1 = results1['tracks']['items']
                 tracks2 = results2['tracks']['items']
 
                 index = 1
                 for track in tracks1:
-                    urls_tracklist.append(track['uri'])
-                    tracklist.append((index, track['name'] + " - " + track['artists'][0]['name']))
+                    session["urls_tracklist"] .append(track['uri'])
+                    session["tracklist"].append((index, track['name'] + " - " + track['artists'][0]['name']))
                     index += 1
 
                 for track in tracks2:
-                    urls_tracklist.append(track['uri'])
-                    tracklist.append((index, track['name'] + " - " + track['artists'][0]['name']))
+                    session["urls_tracklist"] .append(track['uri'])
+                    session["tracklist"].append((index, track['name'] + " - " + track['artists'][0]['name']))
                     index += 1
-
-                return redirect(url_for('question3',tracklist=tracklist))
+                    
+                session.modified = True
+                return redirect(url_for('question3',tracklist=session["tracklist"]))
 
             if question2.back2.data:
 
-                if (artist_names):
-                    question2.artist1.data = artist_names[0]
-                    question2.artist2.data = artist_names[1]
+                if (session["artist_names"]):
+                    question2.artist1.data = session["artist_names"][0]
+                    question2.artist2.data = session["artist_names"][1]
 
-                return redirect(url_for('question1',tracklist=tracklist))
+                return redirect(url_for('question1', tracklist=session["tracklist"]))
 
     if request.method == 'GET':
-        if (artist_names):
-            question2.artist1.data = artist_names[0]
-            question2.artist2.data = artist_names[1]
+        if (session["artist_names"]):
+            question2.artist1.data = session["artist_names"][0]
+            question2.artist2.data = session["artist_names"][1]
 
         return render_template('question2.html',form=question2)
 
 @app.route("/quiz/3", methods=['POST', 'GET'])
 def question3():
     question3 = Question3()
-    question3.track_options.choices = tracklist
+    question3.track_options.choices = session["tracklist"]
+    print("tracklsit from q3", session["tracklist"])
+    print("here are the choices:", question3.track_options.choices)
 
     if request.method == 'POST' and question3.validate_on_submit():
 
             if question3.next3.data:
-                indices_tracks.clear()
-                fave_tracks.clear()
+                session["indices_tracks"].clear()
+                session["fave_tracks"].clear()
                 for x in question3.track_options.data:
-                    indices_tracks.append(x-1)
-                    fave_tracks.append(urls_tracklist[x-1])
-
+                    session["indices_tracks"].append(x-1)
+                    session["fave_tracks"].append(session["urls_tracklist"][x-1])
+                
+                session.modified = True
                 return redirect(url_for('question4'))
 
             if question3.back3.data:
                 return redirect(url_for('question2'))
 
     else:
-        if (indices_tracks):
-                question3.track_options.data = [indices_tracks[0] + 1, indices_tracks[1] + 1]
+        if (session["indices_tracks"]):
+                question3.track_options.data = [session["indices_tracks"][0] + 1, session["indices_tracks"][1] + 1]
 
         return render_template('question3.html',form=question3)
 
 
 @app.route("/quiz/4", methods=['POST', 'GET'])
 def question4():
-    global energy_score
+    # global energy_score
     
     if request.method == 'POST' and request.form['submit_button'] == 'Next':
         energy = request.form['energy']
-        energy_score = energy
+        session["energy_score"] = energy
+        session.modified = True
         return redirect(url_for('question5'))
     
     if request.method == 'POST' and request.form['submit_button'] == 'Back':
         energy = request.form['energy']
-        energy_score = energy
+        session["energy_score"] = energy
+        session.modified = True
         return redirect(url_for('question3'))
 
-    return render_template('question4.html', value = energy_score)
+    return render_template('question4.html', value = session["energy_score"])
 
 
 @app.route("/quiz/5", methods=['POST', 'GET'])
 def question5():
-    global danceability_score
+    # global danceability_score
     
     if request.method == 'POST' and request.form['submit_button'] == 'Submit':
         dance = request.form['dance']
-        danceability_score = dance
+        session["danceability_score"] = dance
+        session.modified = True
         return redirect(url_for('results'))
     
     if request.method == 'POST' and request.form['submit_button'] == 'Back':
         dance = request.form['dance']
-        danceability_score = dance
+        session["danceability_score"] = dance
+        session.modified = True
         return redirect(url_for('question4'))
 
-    return render_template('question5.html', value = danceability_score)
+    return render_template('question5.html', value = session["danceability_score"])
 
 @app.route('/download', methods = ['POST', 'GET'])
 def download(tracks):
@@ -240,37 +271,50 @@ def download(tracks):
 
 @app.route("/quiz/results", methods=['POST', 'GET'])
 def results():
-    global fave_artists, fave_genres, fave_tracks, danceability_score, energy_score, tracks
+    # global fave_artists, fave_genres, fave_tracks, danceability_score, energy_score, tracks
 
-    if not tracks:
-        results = sp.recommendations(seed_artists=fave_artists, seed_genres=fave_genres, seed_tracks=fave_tracks, limit=5, country=None, target_danceability= int(danceability_score)/100, target_energy = int(energy_score)/100)
-        tracks = results['tracks']
+    if not session["tracks"]:
+        results = sp.recommendations(seed_artists=session["fave_tracks"], seed_genres=session["fave_genres"], seed_tracks=session["fave_tracks"], limit=5, country=None, target_danceability= int(session["danceability_score"])/100, target_energy = int(session["energy_score"])/100)
+        session["tracks"] = results['tracks']
+        session.modified = True
 
     if request.method == 'POST':
         
         if request.form['submit_button'] == 'Restart':
-            fave_tracks.clear()
-            artist_names.clear()
-            indices_tracks.clear()
-            urls_tracklist.clear()
-            tracklist.clear()
-            fave_artists.clear()
-            fave_genres.clear()
-            tracks = ""
-            danceability_score = 24
-            energy_score = 24
+            session.pop("fave_tracks", None)
+            session.pop("artist_names", None)
+            session.pop("IndentationError", None)
+            session.pop("urls_tracklist", None)
+            session.pop("tracklist", None)
+            session.pop("fave_artists", None)
+            session.pop("fave genres", None)
+            session.pop("tracks", None)
+            session.pop("danceability_score", None)
+            session.pop("energy_score", None)
             return redirect(url_for('home'))
+
+            # session["fave_tracks"].clear()
+            # session["artist_names"].clear()
+            # session["indices_tracks"].clear()
+            # session["urls_tracklist"].clear()
+            # session["tracklist"].clear()
+            # session["fave_artists"].clear()
+            # session["fave_genres"].clear()
+            # session["tracks"] = ""
+            # session["danceability_score"] = 24
+            # session["energy_score"] = 24
+            # session.modified = True
 
         elif request.form['submit_button'] == 'Save':
             flash('Image saved!')
-            download(tracks)
+            download(session["tracks"])
             return redirect(url_for('results'))
 
         elif request.form['submit_button'] == 'search_artist':
             search_artist = request.form['search_artist'] #artist name will be searched in Wikipedia scraper
             return redirect(url_for('about_artist', search_artist=search_artist))
 
-    return render_template('results.html', tracks = tracks)
+    return render_template('results.html', tracks = session["tracks"])
 
 
 @app.route("/quiz/results/aboutartist", methods=['POST', 'GET'])
