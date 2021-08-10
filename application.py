@@ -37,15 +37,12 @@ sp = spotipy.Spotify(auth_manager=auth_manager)
 class BeginQuiz(FlaskForm):
     submit = SubmitField('Start Quiz')
 
-#Question 1  
 class Question1(FlaskForm):
     genres = sp.recommendation_genre_seeds()
     global fave_genres
     genre1 = SelectField(u'Genre', choices = genres['genres'], validators = [validators.required()])
     next1 = SubmitField('Next')
 
-    
-#Question 2
 class Question2(FlaskForm):
     artist1 = StringField('Artist 1', validators = [validators.required()])
     artist2 = StringField('Artist 2', validators = [validators.required()])
@@ -56,10 +53,9 @@ class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
     
-#Question 3
 class Question3(FlaskForm):
 
-    example = MultiCheckboxField('', choices=[], coerce=int, render_kw={'style': 'height: fit-content; list-style: none;'})
+    track_options = MultiCheckboxField('', choices=[], coerce=int, render_kw={'style': 'height: fit-content; list-style: none;'})
     back3 = SubmitField('Back')
     next3 = SubmitField('Next')
     
@@ -70,15 +66,11 @@ class Question3(FlaskForm):
         if not rv:                                                              
             return False                                                        
 
-        print(self.example.data)
-        print(len(self.example.data))
-
-        if len(self.example.data) > 2 or len(self.example.data) < 2:  
-            print("in here!")
-            self.example.errors.append('Please select 2 items')    
+        if len(self.track_options.data) > 2 or len(self.track_options.data) < 2:  
+            self.track_options.errors.append('Please select 2 items')    
             return False                                                        
 
-        return True 
+        return True
 
 
 #Home Page
@@ -91,7 +83,6 @@ def home():
     return render_template('home.html',form=form)
 
 
-#Quiz
 @app.route("/quiz/1", methods=['POST', 'GET'])
 def question1():
     question1 = Question1()
@@ -116,7 +107,7 @@ def question2():
     question2 = Question2()
 
     if request.method == 'POST':
-        
+
         if question2.validate_on_submit():
             global fave_artists, urls_tracklist, artist_names, tracklist
             tracklist.clear()
@@ -124,10 +115,10 @@ def question2():
             artist_names.clear()
             fave_artists.clear()
 
-            if question2.next2.data:
+            artist_names.append(question2.artist1.data)
+            artist_names.append(question2.artist2.data)
 
-                artist_names.append(question2.artist1.data)
-                artist_names.append(question2.artist2.data)
+            if question2.next2.data:
 
                 results1 = sp.search(q=question2.artist1.data, limit=4)
                 results2 = sp.search(q=question2.artist2.data, limit=4)
@@ -152,8 +143,6 @@ def question2():
                 return redirect(url_for('question3',tracklist=tracklist))
 
             if question2.back2.data:
-                artist_names.append(question2.artist1.data)
-                artist_names.append(question2.artist2.data)
 
                 if (artist_names):
                     question2.artist1.data = artist_names[0]
@@ -171,14 +160,14 @@ def question2():
 @app.route("/quiz/3", methods=['POST', 'GET'])
 def question3():
     question3 = Question3()
-    question3.example.choices = tracklist
+    question3.track_options.choices = tracklist
 
     if request.method == 'POST' and question3.validate_on_submit():
 
             if question3.next3.data:
                 indices_tracks.clear()
                 fave_tracks.clear()
-                for x in question3.example.data:
+                for x in question3.track_options.data:
                     indices_tracks.append(x-1)
                     fave_tracks.append(urls_tracklist[x-1])
 
@@ -186,12 +175,10 @@ def question3():
 
             if question3.back3.data:
                 return redirect(url_for('question2'))
-            
+
     else:
         if (indices_tracks):
-                print("hello sir")
-                print(indices_tracks)
-                question3.example.data = [indices_tracks[0] + 1, indices_tracks[1] + 1]
+                question3.track_options.data = [indices_tracks[0] + 1, indices_tracks[1] + 1]
 
         return render_template('question3.html',form=question3)
 
@@ -212,6 +199,7 @@ def question4():
 
     return render_template('question4.html', value = energy_score)
 
+
 @app.route("/quiz/5", methods=['POST', 'GET'])
 def question5():
     global danceability_score
@@ -219,7 +207,6 @@ def question5():
     if request.method == 'POST' and request.form['submit_button'] == 'Submit':
         dance = request.form['dance']
         danceability_score = dance
-        print(danceability_score)
         return redirect(url_for('results'))
     
     if request.method == 'POST' and request.form['submit_button'] == 'Back':
@@ -241,24 +228,21 @@ def download(tracks):
 
     for track in tracks:
         content += track['name'] + "-" + track['artists'][0]['name'] + '\n'
-    
+
     d1.text((offset, margin), content, fill=(55, 60, 63), font = font)
 
     img.show()
     img.save("image_text.png")
-    # return render_template('download.html')
 
 @app.route("/quiz/results", methods=['POST', 'GET'])
 def results():
     global fave_artists, fave_genres, fave_tracks, danceability_score, energy_score, tracks
-    print(fave_artists, fave_genres, fave_tracks, danceability_score, energy_score)
 
     if not tracks:
         results = sp.recommendations(seed_artists=fave_artists, seed_genres=fave_genres, seed_tracks=fave_tracks, limit=5, country=None, target_danceability= int(danceability_score)/100, target_energy = int(energy_score)/100)
         tracks = results['tracks']
 
     if request.method == 'POST':
-        print("back here...")
         
         if request.form['submit_button'] == 'Restart':
             fave_tracks.clear()
@@ -274,45 +258,46 @@ def results():
             return redirect(url_for('home'))
 
         elif request.form['submit_button'] == 'Save':
-            print("Saving....")
             flash('Image saved!')
             download(tracks)
             return redirect(url_for('results'))
 
         elif request.form['submit_button'] == 'search_artist':
             search_artist = request.form['search_artist'] #artist name will be searched in Wikipedia scraper
-            print(search_artist)
-            return redirect(url_for('aboutartist', search_artist=search_artist))
-            #send artist name + data from Wikipedia scraper (to be implemented)
-            # return render_template('aboutartist.html', artist=search_artist)
+            return redirect(url_for('about_artist', search_artist=search_artist))
 
     return render_template('results.html', tracks = tracks)
 
+
 @app.route("/quiz/results/aboutartist", methods=['POST', 'GET'])
-def aboutartist():
+def about_artist():
 
     if request.method == 'POST' and request.form['submit_button'] == 'Back':
         return redirect(url_for('results'))
 
     search_artist = request.args['search_artist']
 
+    artist_info = wikipedia_scraper(search_artist)
+
+    return render_template('aboutartist.html', artist=search_artist, about_artist = artist_info)
+
+
+def wikipedia_scraper(artist_name):
+
     try:
-        artist_link = "https://wiki-scrapper.herokuapp.com/?q="  + urllib.parse.quote(search_artist)
-        print(artist_link)
+        artist_link = "https://wiki-scrapper.herokuapp.com/?q="  + urllib.parse.quote(artist_name)
         contents = urllib.request.urlopen(artist_link).read()
         contents_dict = json.loads(contents)
-        
+
         artist_info = ""
         for content in contents_dict['message']:
             artist_info += content
-        
-        print(artist_info)
+
     except Exception:
         artist_info = "No information available :("
-        print("error!!!")
 
-    # image = contents_dict['message'][1]
-    return render_template('aboutartist.html', artist=search_artist, about_artist = artist_info)
+    return artist_info
+
 
 #route to test image scraper
 @app.route("/test", methods=['POST', 'GET'])
