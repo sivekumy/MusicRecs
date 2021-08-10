@@ -14,6 +14,10 @@ from PIL import ImageDraw
 from urllib.request import urlopen
 from io import BytesIO
 import requests
+import os
+from boto.s3.connection import S3Connection
+
+s3 = S3Connection(os.environ['SPOTIPY_CLIENT_ID'], os.environ['SPOTIPY_CLIENT_SECRET'])
 
 app = Flask(__name__)
 Bootstrap(app)
