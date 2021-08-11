@@ -32,7 +32,13 @@ MusicRecs
       {{ form.hidden_tag() }}
 
       {{ wtf.quick_form(form) }}
-
+      
+      {% for key in form.errors %}                                            
+        {% for error in form.errors[key] %}                                 
+            <span style="color: red;">[{{ error }}]</span>                  
+        {% endfor %}                                          
+      {% endfor %}  
+  
       <p class="pt-5"><strong>{{ message }}</strong></p>
 
   </div>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, send_from_directory, flash, session
+from flask import Flask, render_template, redirect, url_for, request, send_from_directory, flash, session, send_file
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, validators, BooleanField, SelectMultipleField, widgets
@@ -16,7 +16,7 @@ from io import BytesIO
 import requests
 import os
 from boto.s3.connection import S3Connection
-
+from forms import *
 
 s3 = S3Connection(os.environ['SPOTIPY_CLIENT_ID'], os.environ['SPOTIPY_CLIENT_SECRET'])
 
@@ -40,45 +40,6 @@ app.secret_key = 'uZY3nyUwMr'
 
 auth_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(auth_manager=auth_manager)
-
-#Home page start button, allows user to begin quiz
-class BeginQuiz(FlaskForm):
-    submit = SubmitField('Start Quiz')
-
-class Question1(FlaskForm):
-    genres = sp.recommendation_genre_seeds()
-    # global fave_genres
-    genre1 = SelectField(u'Genre', choices = genres['genres'], validators = [validators.required()])
-    next1 = SubmitField('Next')
-
-class Question2(FlaskForm):
-    artist1 = StringField('Artist 1', validators = [validators.required()])
-    artist2 = StringField('Artist 2', validators = [validators.required()])
-    back2 = SubmitField('Back')
-    next2 = SubmitField('Next')
-
-class MultiCheckboxField(SelectMultipleField):
-    widget = widgets.ListWidget(prefix_label=False)
-    option_widget = widgets.CheckboxInput()
-    
-class Question3(FlaskForm):
-
-    track_options = MultiCheckboxField('', choices=[], coerce=int, render_kw={'style': 'height: fit-content; list-style: none;'})
-    back3 = SubmitField('Back')
-    next3 = SubmitField('Next')
-    
-    def validate(self):                                                         
-
-        rv = FlaskForm.validate(self)                                           
-
-        if not rv:                                                              
-            return False                                                        
-
-        if len(self.track_options.data) > 2 or len(self.track_options.data) < 2:  
-            self.track_options.errors.append('Please select 2 items')    
-            return False                                                        
-
-        return True
 
 
 @app.route("/", methods=['POST', 'GET'])
@@ -105,6 +66,8 @@ def home():
 def question1():
     question1 = Question1()
     # global fave_genres
+    genres = sp.recommendation_genre_seeds()
+    question1.genre1.choices = genres['genres']
     
     if request.method == 'GET':
         
@@ -131,54 +94,52 @@ def question2():
     print("fave genres", session["fave_genres"])
     print("fave genres2", session.get('fave_genres', None))
 
-    if request.method == 'POST':
+    if request.method == 'POST' and question2.validate_on_submit():
+        print("hello")
+        # global fave_artists, urls_tracklist, artist_names, tracklist
+        session["tracklist"].clear()
+        session["urls_tracklist"].clear()
+        session["artist_names"].clear()
+        session["fave_artists"].clear()
 
-        if question2.validate_on_submit():
-            # global fave_artists, urls_tracklist, artist_names, tracklist
-            session["tracklist"].clear()
-            session["urls_tracklist"].clear()
-            session["artist_names"].clear()
-            session["fave_artists"].clear()
-            
-            session["artist_names"].append(question2.artist1.data)
-            session["artist_names"].append(question2.artist2.data)
+        session["artist_names"].append(question2.artist1.data)
+        session["artist_names"].append(question2.artist2.data)
+        session.modified = True
+
+        if question2.next2.data:
+
+            results1 = sp.search(q=question2.artist1.data, limit=4)
+            results2 = sp.search(q=question2.artist2.data, limit=4)
+
+            session["fave_artists"].append(results1['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
+            session["fave_artists"].append(results2['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
+
+            tracks1 = results1['tracks']['items']
+            tracks2 = results2['tracks']['items']
+
+            index = 1
+            for track in tracks1:
+                session["urls_tracklist"] .append(track['uri'])
+                session["tracklist"].append((index, track['name'] + " - " + track['artists'][0]['name']))
+                index += 1
+
+            for track in tracks2:
+                session["urls_tracklist"] .append(track['uri'])
+                session["tracklist"].append((index, track['name'] + " - " + track['artists'][0]['name']))
+                index += 1
+
             session.modified = True
+            return redirect(url_for('question3',tracklist=session["tracklist"]))
 
+        if question2.back2.data:
 
-            if question2.next2.data:
+            if (session["artist_names"]):
+                question2.artist1.data = session["artist_names"][0]
+                question2.artist2.data = session["artist_names"][1]
 
-                results1 = sp.search(q=question2.artist1.data, limit=4)
-                results2 = sp.search(q=question2.artist2.data, limit=4)
+            return redirect(url_for('question1', tracklist=session["tracklist"]))
 
-                session["fave_artists"].append(results1['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
-                session["fave_artists"].append(results2['tracks']['items'][0]['album']['artists'][0]['external_urls']['spotify'])
-
-                tracks1 = results1['tracks']['items']
-                tracks2 = results2['tracks']['items']
-
-                index = 1
-                for track in tracks1:
-                    session["urls_tracklist"] .append(track['uri'])
-                    session["tracklist"].append((index, track['name'] + " - " + track['artists'][0]['name']))
-                    index += 1
-
-                for track in tracks2:
-                    session["urls_tracklist"] .append(track['uri'])
-                    session["tracklist"].append((index, track['name'] + " - " + track['artists'][0]['name']))
-                    index += 1
-                    
-                session.modified = True
-                return redirect(url_for('question3',tracklist=session["tracklist"]))
-
-            if question2.back2.data:
-
-                if (session["artist_names"]):
-                    question2.artist1.data = session["artist_names"][0]
-                    question2.artist2.data = session["artist_names"][1]
-
-                return redirect(url_for('question1', tracklist=session["tracklist"]))
-
-    if request.method == 'GET':
+    else:
         if (session["artist_names"]):
             question2.artist1.data = session["artist_names"][0]
             question2.artist2.data = session["artist_names"][1]
@@ -251,23 +212,24 @@ def question5():
 
     return render_template('question5.html', value = session["danceability_score"])
 
-@app.route('/download', methods = ['POST', 'GET'])
-def download(tracks):
+@app.route('/download')
+def download():
     offset = margin = 90
 
     img = PIL.Image.open('templates/saved_recs.png')
     d1 = ImageDraw.Draw(img)
     content = "Recommendations from MusicRecs" + "\n\n"
 
-    font = ImageFont.truetype("fonts/SpaceMono-Regular.ttf", 10)
+    font = ImageFont.truetype("fonts/NotoSerif-Regular.ttf", 10)
 
-    for track in tracks:
+    for track in session["tracks"]:
         content += track['name'] + "-" + track['artists'][0]['name'] + '\n'
 
     d1.text((offset, margin), content, fill=(55, 60, 63), font = font)
 
     img.show()
-    img.save("image_text.png")
+    img.save("recommendations_musicrecs.png")
+    return send_file("recommendations_musicrecs.png", as_attachment=True)
 
 @app.route("/quiz/results", methods=['POST', 'GET'])
 def results():
@@ -307,8 +269,9 @@ def results():
 
         elif request.form['submit_button'] == 'Save':
             flash('Image saved!')
-            download(session["tracks"])
-            return redirect(url_for('results'))
+            # download(session["tracks"])
+            return redirect(url_for('download'))
+            # return redirect(url_for('results'))
 
         elif request.form['submit_button'] == 'search_artist':
             search_artist = request.form['search_artist'] #artist name will be searched in Wikipedia scraper
