@@ -18,6 +18,25 @@ MusicRecs
 
 {% block content %}
 
+<!-- From: https://getbootstrap.com/docs/4.0/components/navbar/ -->
+<div class="pos-f-t">
+  <div class="collapse" id="navbarToggleExternalContent">
+    <div class="bg-dark-p-4">
+      <span class="text-muted">
+        <p>Choose your desire to dance and click the Next button to see the results!</p>
+        <p>If you would like to change your previous response, click the Back button to go back to Question 4.</p>
+        </span>
+    </div>
+  </div>
+  <nav class="navbar-navbar-dark-bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+        Help
+    </button>
+  </nav>
+</div>
+
+
 <div class="container">
       <h1 class="app_name">MusicRecs</h1>      
     
@@ -28,7 +47,7 @@ MusicRecs
   <div class="row">
 
       <p class="lead">Do you want to dance?</p>
-      <p class="tip">Click and hold circle. Drag it left or right to adjust value.</p>
+      <p class="tip">Click and hold circle. Drag it left or right to adjust value. (1 = Low, 100 = High)</p>
 
       
         <form method="POST" action="">

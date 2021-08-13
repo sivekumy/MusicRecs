@@ -5,7 +5,6 @@
   width: 80%;
   padding: 10px;
   text-align: center;
-
 }
 
 .row {  
@@ -16,6 +15,25 @@
   text-align: center; 
 }
 
+.navbar-toggler {
+    border-radius: 8px;
+    background: black;
+    font-size: 15px;
+    padding: 15px 15px;
+    color: white;
+    text-decoration: none;
+    border: none;
+    font-family: 'Barlow', sans-serif;
+
+}
+
+.navbar-navbar-dark-bg-dark{
+    background: black;
+}
+
+.bg-dark-p-4 {
+    padding: 10px 15px
+}
 
 h1 {
   font-family: 'Share', cursive;

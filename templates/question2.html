@@ -18,6 +18,26 @@ MusicRecs
 
 {% block content %}
 
+<!-- From: https://getbootstrap.com/docs/4.0/components/navbar/ -->
+<div class="pos-f-t">
+  <div class="collapse" id="navbarToggleExternalContent">
+    <div class="bg-dark-p-4">
+      <span class="text-muted">
+          <p>Enter two of your favourite artists and click the Next button to go to Question 3.</p>
+          <p>If you would like to change your previous response, click the Back button to go back to Question 1.</p>
+          <p>Note: please ensure spelling of aritst names are aligned to names in Spotify. Otherwise, options in Question 3 may be incorrect.</p>
+        </span>
+    </div>
+  </div>
+  <nav class="navbar-navbar-dark-bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+        Help
+    </button>
+  </nav>
+</div>
+
+
 <div class="container">
       <h1 class="app_name">MusicRecs</h1>      
     

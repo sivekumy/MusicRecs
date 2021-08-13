@@ -21,36 +21,67 @@ MusicRecs
 {% endblock %}
 
 {% block content %}
+
+<!-- From: https://getbootstrap.com/docs/4.0/components/navbar/ -->
+<div class="pos-f-t">
+  <div class="collapse" id="navbarToggleExternalContent">
+    <div class="bg-dark-p-4">
+      <span class="text-muted">
+        <p>Note: 30 second previews may not exist for all artists.</p>
+        <p>Click the Save button to save an image of the recommendations onto your device.</p>
+        <p>Click the Restart button if you would like to try the quiz again.</p>
+        </span>
+    </div>
+  </div>
+  <nav class="navbar-navbar-dark-bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+        Help
+    </button>
+  </nav>
+</div>
+
+
     <div class="container">
         <h1 class="app_name">MusicRecs</h1>      
         <p class="slogan">Recommendations for you</p>
         <p class="tip">Click the heart next to a recommendation to learn more about the artist!</p>
+    {% if tracks %}
+        {% for track in tracks %}
 
-    {% for track in tracks %}
-
-      <div class="row">
-        <div class="col">
-              <img class="album_cover" width="170" src={{track['album']['images'][1]['url']}}>
-        </div>
-        <div class="col">
-            <p class="track_name">{{track['name']}}</p>
-            <p class="artist_name">{{track['artists'][0]['name']}}</p>
-            <audio controls>
-                <source src="{{track['preview_url']}}" type="">
-            </audio>
-            <p class="audio_link four columns"><a href="{{track['external_urls']['spotify']}}">
-                <img src="https://logodownload.org/wp-content/uploads/2020/03/listen-on-spotify.png" width="100"></a>
-            </p>    
-          </div>
+          <div class="row">
             <div class="col">
-            <form method= "POST" action="">
-                <input type="hidden" name="search_artist" value="{{track['artists'][0]['name']}}">
-                <button class="btn" name="submit_button" value ="search_artist"><i width=500 class="bi bi-heart-fill"></i></button>
-            </form>
-        </div>
-      </div>
-        {% endfor %}  
+                  <img class="album_cover" width="170" src={{track['album']['images'][1]['url']}}>
+            </div>
+            <div class="col">
+                <p class="track_name">{{track['name']}}</p>
+                <p class="artist_name">{{track['artists'][0]['name']}}</p>
+                <audio controls>
+                    <source src="{{track['preview_url']}}" type="">
+                </audio>
+                <p class="audio_link four columns"><a href="{{track['external_urls']['spotify']}}">
+                    <img src="https://logodownload.org/wp-content/uploads/2020/03/listen-on-spotify.png" width="100"></a>
+                </p>    
+              </div>
+                <div class="col">
+                <form method= "POST" action="">
+                    <input type="hidden" name="search_artist" value="{{track['artists'][0]['name']}}">
+                    <button class="btn" name="submit_button" value ="search_artist"><i width=500 class="bi bi-heart-fill"></i></button>
+                </form>
+            </div>
+          </div>
+            {% endfor %}  
+        {% endif %}
         
+        {% if not tracks %}
+          <div class="row">
+
+              <p class="lead">No recommendations available. Please click Restart to try again.</p>
+
+          </div>
+        {% endif %}
+
+
         <form method = "POST" action= "">
             <input type="submit" value="Save" name="submit_button"/>
             <input type="submit" value="Restart" name="submit_button" />
