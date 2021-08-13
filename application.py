@@ -41,8 +41,8 @@ def home():
         session["fave_artists"] = []
         session["artist_names"] = []
         session["tracks"] = ""
-        session["danceability_score"] = 24
-        session["energy_score"] = 24
+        session["danceability_score"] = 50
+        session["energy_score"] = 50
 
         return redirect(url_for('question1'))
 
