@@ -16,23 +16,26 @@
 }
 
 .navbar-toggler {
-    border-radius: 8px;
-    background: black;
-    font-size: 15px;
-    padding: 15px 15px;
-    color: white;
-    text-decoration: none;
-    border: none;
-    font-family: 'Barlow', sans-serif;
-
+    border-radius: 8px !important;
+    background: black !important;
+    font-size: 15px !important;
+    padding: 15px 15px !important;
+    color: white !important;
+    text-decoration: none !important;
+    border: none !important;
+    font-family: 'Barlow', sans-serif !important;
+    text-align: center !important; 
 }
 
 .navbar-navbar-dark-bg-dark{
-    background: black;
+    background: black !important;
 }
 
 .bg-dark-p-4 {
-    padding: 10px 15px
+    padding: 10px 15px !important;
+    font-family: 'Fira Sans', sans-serif !important;
+    font-size: 15px !important;
+    
 }
 
 h1 {

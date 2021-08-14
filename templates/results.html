@@ -3,16 +3,19 @@
 
 {% block styles %}
 {{ super() }}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/homepage.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css" rel="stylesheet" /> -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Abel&family=Space+Mono&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@100;500&family=Fira+Sans&display=swap" rel="stylesheet">
 
 {% endblock %}
 
@@ -26,16 +29,14 @@ MusicRecs
 <div class="pos-f-t">
   <div class="collapse" id="navbarToggleExternalContent">
     <div class="bg-dark-p-4">
-      <span class="text-muted">
+      <span class="text-muted"></span>
         <p>Note: 30 second previews may not exist for all artists.</p>
         <p>Click the Save button to save an image of the recommendations onto your device.</p>
         <p>Click the Restart button if you would like to try the quiz again.</p>
-        </span>
     </div>
   </div>
   <nav class="navbar-navbar-dark-bg-dark">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
         Help
     </button>
   </nav>
@@ -88,40 +89,5 @@ MusicRecs
         </form>
 
     </div>
-
-<!-- <div class="container">
-      <h1 class="app_name">MusicRecs</h1>      
-
-  <div class="row">
-
-      <p class="lead">Results</p>
- 
-    {% for track in tracks %}
-     
-    <div class="container">
-      <div class="row">
-        <div class="col">
-              <img class="album_cover" src={{track['album']['images'][1]['url']}}>
-        </div>
-        <div class="col">
-                  <p class="track_name">{{track['name']}}</p>
-                  <p class="artist_name">{{track['artists'][0]['name']}}</p>
-                  <audio controls>
-                      <source src="{{track['preview_url']}}" type="">
-                  </audio>
-
-                  <p class="audio_link four columns"><a href="{{track['external_urls']['spotify']}}">
-                      <img src="https://logodownload.org/wp-content/uploads/2020/03/listen-on-spotify.png"></a>
-                  </p>    
-          </div>
-        </div>
-    </div>
-
-
-    {% endfor %}  
-      <p class="pt-5"><strong>{{ message }}</strong></p>
-
-  </div>
-</div> -->
  
 {% endblock %}
