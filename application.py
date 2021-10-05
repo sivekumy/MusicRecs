@@ -22,7 +22,7 @@ s3 = S3Connection(os.environ['SPOTIPY_CLIENT_ID'], os.environ['SPOTIPY_CLIENT_SE
 
 app = Flask(__name__)
 Bootstrap(app)
-app.secret_key = 'uZY3nyUwMr'
+app.secret_key = ******
 
 auth_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(auth_manager=auth_manager)
